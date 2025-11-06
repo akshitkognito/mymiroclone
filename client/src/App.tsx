@@ -1,35 +1,45 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [tool, setTool] = useState('line');
+
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    setDimensions({ width: window.innerWidth, height: window.innerHeight });
+  }, []);
+
+  useLayoutEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const context = canvas.getContext('2d');
+    if (!context) return;
+
+    requestAnimationFrame(() => {
+      context.strokeStyle = 'white';
+      context.lineWidth = 2;
+
+      context.strokeRect(10, 10, 150, 150);
+
+      context.beginPath();
+      context.moveTo(10, 10);
+      context.lineTo(110, 110);
+      context.stroke();
+    });
+  }, [dimensions]);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div>
+      <canvas
+        ref={canvasRef}
+        width={dimensions.width}
+        height={dimensions.height}
+      ></canvas>
+    </div>
+  );
 }
 
-export default App
+export default App;
