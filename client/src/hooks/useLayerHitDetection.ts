@@ -104,6 +104,24 @@ const useLayerHitDetection = (
               if (dist <= tolerance) return id;
             }
           }
+        } else if (layer.type === LayerType.Text) {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.font = `${layer.fontSize}px ${layer.fontFamily}`;
+            const metrics = ctx.measureText(layer.content);
+            const textWidth = metrics.width;
+            const textHeight = layer.fontSize;
+
+            if (
+              point.x >= layer.x &&
+              point.x <= layer.x + textWidth &&
+              point.y >= layer.y &&
+              point.y <= layer.y + textHeight
+            ) {
+              return id;
+            }
+          }
         }
       }
       return null;

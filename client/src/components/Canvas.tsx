@@ -1,9 +1,9 @@
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
+  KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 import {
   CanvasMode,
@@ -17,6 +17,7 @@ import useCanvasDimensions from '@/hooks/useCanvasDimensions';
 import useLayerManagement from '@/hooks/useLayerManagement';
 import useLayerHitDetection from '@/hooks/useLayerHitDetection';
 import useLayerRenderer from '@/hooks/useLayerRenderer';
+import { colorToString } from '@/utils/elementFactory';
 
 const Canvas = () => {
   const [canvasState, setCanvasState] = useState<CanvasState>({
@@ -28,6 +29,10 @@ const Canvas = () => {
     g: 0,
     b: 0,
   });
+  const [fontFamily, setFontFamily] = useState<string>('Arial');
+  const [fontSize, setFontSize] = useState<number>(16);
+  const [editingTextId, setEditingTextId] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const drawingRef = useRef<{ startPoint: Point; layerId: string } | null>(
@@ -53,7 +58,7 @@ const Canvas = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedLayerId) {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedLayerId && !editingTextId) {
         e.preventDefault();
         handleDelete();
       }
@@ -61,13 +66,20 @@ const Canvas = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedLayerId, handleDelete]);
+  }, [selectedLayerId, handleDelete, editingTextId]);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const point = { x: e.clientX, y: e.clientY };
 
-      if (canvasState.mode === CanvasMode.Inserting) {
+      if (canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Text) {
+        const layerId = insertLayer(LayerType.Text, point);
+        if (layerId) {
+          setSelectedLayerId(layerId);
+          setEditingTextId(layerId);
+          setCanvasState({ mode: CanvasMode.None });
+        }
+      } else if (canvasState.mode === CanvasMode.Inserting) {
         const layerId = insertLayer(canvasState.layerType, point);
         if (layerId) {
           drawingRef.current = { startPoint: point, layerId };
@@ -102,6 +114,11 @@ const Canvas = () => {
                 layerId,
                 offset: point,
               };
+            } else if (layer.type === LayerType.Text) {
+              draggingRef.current = {
+                layerId,
+                offset: { x: point.x - layer.x, y: point.y - layer.y },
+              };
             }
             setCanvasState({ mode: CanvasMode.Translating, current: point });
           }
@@ -110,7 +127,7 @@ const Canvas = () => {
         }
       }
     },
-    [canvasState, insertLayer, findLayerAtPoint, layers]
+    [canvasState, insertLayer, findLayerAtPoint, layers, setEditingTextId]
   );
 
   const handleMouseMove = useCallback(
@@ -183,6 +200,11 @@ const Canvas = () => {
               layerId,
               offset: point,
             };
+          } else if (layer.type === LayerType.Text) {
+            updateLayer(layerId, {
+              x: point.x - offset.x,
+              y: point.y - offset.y,
+            });
           }
         }
         setCanvasState({ mode: CanvasMode.Translating, current: point });
@@ -234,6 +256,89 @@ const Canvas = () => {
     }
   }, [canvasState, layers, deleteLayer]);
 
+  const handleTextDoubleClick = useCallback(() => {
+    if (selectedLayerId) {
+      const layer = layers.get(selectedLayerId);
+      if (layer && layer.type === LayerType.Text) {
+        setEditingTextId(selectedLayerId);
+      }
+    }
+  }, [selectedLayerId, layers]);
+
+  const handleTextChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (editingTextId) {
+        updateLayer(editingTextId, { content: e.target.value });
+      }
+    },
+    [editingTextId, updateLayer]
+  );
+
+  const handleTextBlur = useCallback(() => {
+    setEditingTextId(null);
+  }, []);
+
+  const handleTextKeyDown = useCallback(
+    (e: ReactKeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        setEditingTextId(null);
+      }
+      e.stopPropagation();
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (editingTextId && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editingTextId]);
+
+  const handleFontFamilyChange = useCallback(
+    (newFontFamily: string) => {
+      setFontFamily(newFontFamily);
+      if (selectedLayerId) {
+        const layer = layers.get(selectedLayerId);
+        if (layer && layer.type === LayerType.Text) {
+          updateLayer(selectedLayerId, { fontFamily: newFontFamily });
+        }
+      }
+    },
+    [selectedLayerId, layers, updateLayer]
+  );
+
+  const handleFontSizeChange = useCallback(
+    (newFontSize: number) => {
+      setFontSize(newFontSize);
+      if (selectedLayerId) {
+        const layer = layers.get(selectedLayerId);
+        if (layer && layer.type === LayerType.Text) {
+          updateLayer(selectedLayerId, { fontSize: newFontSize });
+        }
+      }
+    },
+    [selectedLayerId, layers, updateLayer]
+  );
+
+  const handleTextColorChange = useCallback(
+    (newColor: Color) => {
+      setLastUsedColor(newColor);
+      if (selectedLayerId) {
+        const layer = layers.get(selectedLayerId);
+        if (layer && layer.type === LayerType.Text) {
+          updateLayer(selectedLayerId, { color: newColor });
+        }
+      }
+    },
+    [selectedLayerId, layers, updateLayer]
+  );
+
+  const selectedTextLayer =
+    selectedLayerId && layers.get(selectedLayerId)?.type === LayerType.Text
+      ? (layers.get(selectedLayerId) as any)
+      : null;
+
   return (
     <main className='h-screen w-screen relative overflow-hidden bg-gray-50'>
       <Toolbar
@@ -241,6 +346,13 @@ const Canvas = () => {
         setCanvasState={setCanvasState}
         selectedLayerId={selectedLayerId}
         onDelete={handleDelete}
+        fontFamily={selectedTextLayer?.fontFamily || fontFamily}
+        fontSize={selectedTextLayer?.fontSize || fontSize}
+        textColor={selectedTextLayer?.color || lastUsedColor}
+        onFontFamilyChange={handleFontFamilyChange}
+        onFontSizeChange={handleFontSizeChange}
+        onTextColorChange={handleTextColorChange}
+        isTextSelected={selectedTextLayer !== null}
       />
       <canvas
         ref={canvasRef}
@@ -249,8 +361,36 @@ const Canvas = () => {
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onDoubleClick={handleTextDoubleClick}
         className='block cursor-crosshair'
       />
+      {editingTextId && (() => {
+        const layer = layers.get(editingTextId);
+        if (!layer || layer.type !== LayerType.Text) return null;
+        return (
+          <input
+            ref={inputRef}
+            type='text'
+            value={layer.content}
+            onChange={handleTextChange}
+            onBlur={handleTextBlur}
+            onKeyDown={handleTextKeyDown}
+            style={{
+              position: 'absolute',
+              left: `${layer.x}px`,
+              top: `${layer.y}px`,
+              fontFamily: layer.fontFamily,
+              fontSize: `${layer.fontSize}px`,
+              color: colorToString(layer.color),
+              border: '2px solid #3399FF',
+              outline: 'none',
+              background: 'transparent',
+              padding: '2px',
+              minWidth: '100px',
+            }}
+          />
+        );
+      })()}
     </main>
   );
 };

@@ -84,6 +84,20 @@ const useLayerRenderer = (
         }
 
         ctx.stroke();
+      } else if (layer.type === LayerType.Text) {
+        ctx.font = `${layer.fontSize}px ${layer.fontFamily}`;
+        ctx.fillStyle = id === selectedLayerId ? '#3399FF' : colorToString(layer.color);
+        ctx.textBaseline = 'top';
+        ctx.fillText(layer.content, layer.x, layer.y);
+
+        if (id === selectedLayerId) {
+          const metrics = ctx.measureText(layer.content);
+          const textWidth = metrics.width;
+          const textHeight = layer.fontSize;
+          ctx.strokeStyle = '#3399FF';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(layer.x - 2, layer.y - 2, textWidth + 4, textHeight + 4);
+        }
       }
     });
   }, [layers, layerIds, dimensions, selectedLayerId, canvasRef]);

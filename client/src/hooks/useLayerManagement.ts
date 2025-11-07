@@ -50,6 +50,17 @@ const useLayerManagement = (lastUsedColor: Color) => {
           points: [position],
           color: lastUsedColor,
         };
+      } else if (layerType === LayerType.Text) {
+        newLayer = {
+          type: LayerType.Text,
+          id: newLayerId,
+          x: position.x,
+          y: position.y,
+          content: 'Text',
+          color: lastUsedColor,
+          fontFamily: 'Arial',
+          fontSize: 16,
+        };
       } else {
         newLayer = {
           type: LayerType.Arrow,
