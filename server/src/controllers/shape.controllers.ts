@@ -121,13 +121,13 @@ export const updateShapeById = (req: Request, res: Response) => {
         pageId: existingShape.pageId,
       };
 
-    if (updatedShape && !isValidShape(updatedShape)) {
-      const response: ApiResponse = {
-        success: false,
-        error: 'Invalid shape data',
-      };
-      return res.status(400).json(response);
-    }
+    // if (updatedShape && !isValidShape(updatedShape)) {
+    //   const response: ApiResponse = {
+    //     success: false,
+    //     error: 'Invalid shape data',
+    //   };
+    //   return res.status(400).json(response);
+    // }
 
     shapes.set(id, updatedShape || null);
 
