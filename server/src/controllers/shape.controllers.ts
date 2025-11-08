@@ -112,24 +112,23 @@ export const updateShapeById = (req: Request, res: Response) => {
 
     let updatedShape: Shape | null = null;
 
-    if (existingShape)
+    if (existingShape) {
       updatedShape = {
         ...existingShape,
         ...updates,
         id: existingShape.id,
         pageId: existingShape.pageId,
-        points: updates.points ?? existingShape.points,
-        width: updates.width ?? existingShape.width,
-        height: updates.height ?? existingShape.height,
+        // Explicitly handle all shape-specific properties
+        x: updates.x !== undefined ? updates.x : existingShape.x,
+        y: updates.y !== undefined ? updates.y : existingShape.y,
+        points:
+          updates.points !== undefined ? updates.points : existingShape.points,
+        width:
+          updates.width !== undefined ? updates.width : existingShape.width,
+        height:
+          updates.height !== undefined ? updates.height : existingShape.height,
       };
-
-    // if (updatedShape && !isValidShape(updatedShape)) {
-    //   const response: ApiResponse = {
-    //     success: false,
-    //     error: 'Invalid shape data',
-    //   };
-    //   return res.status(400).json(response);
-    // }
+    }
 
     shapes.set(id, updatedShape || null);
 
