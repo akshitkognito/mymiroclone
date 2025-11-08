@@ -58,7 +58,11 @@ const Canvas = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedLayerId && !editingTextId) {
+      if (
+        (e.key === 'Delete' || e.key === 'Backspace') &&
+        selectedLayerId &&
+        !editingTextId
+      ) {
         e.preventDefault();
         handleDelete();
       }
@@ -72,7 +76,10 @@ const Canvas = () => {
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const point = { x: e.clientX, y: e.clientY };
 
-      if (canvasState.mode === CanvasMode.Inserting && canvasState.layerType === LayerType.Text) {
+      if (
+        canvasState.mode === CanvasMode.Inserting &&
+        canvasState.layerType === LayerType.Text
+      ) {
         const layerId = insertLayer(LayerType.Text, point);
         if (layerId) {
           setSelectedLayerId(layerId);
@@ -364,33 +371,34 @@ const Canvas = () => {
         onDoubleClick={handleTextDoubleClick}
         className='block cursor-crosshair'
       />
-      {editingTextId && (() => {
-        const layer = layers.get(editingTextId);
-        if (!layer || layer.type !== LayerType.Text) return null;
-        return (
-          <input
-            ref={inputRef}
-            type='text'
-            value={layer.content}
-            onChange={handleTextChange}
-            onBlur={handleTextBlur}
-            onKeyDown={handleTextKeyDown}
-            style={{
-              position: 'absolute',
-              left: `${layer.x}px`,
-              top: `${layer.y}px`,
-              fontFamily: layer.fontFamily,
-              fontSize: `${layer.fontSize}px`,
-              color: colorToString(layer.color),
-              border: '2px solid #3399FF',
-              outline: 'none',
-              background: 'transparent',
-              padding: '2px',
-              minWidth: '100px',
-            }}
-          />
-        );
-      })()}
+      {editingTextId &&
+        (() => {
+          const layer = layers.get(editingTextId);
+          if (!layer || layer.type !== LayerType.Text) return null;
+          return (
+            <input
+              ref={inputRef}
+              type='text'
+              value={layer.content}
+              onChange={handleTextChange}
+              onBlur={handleTextBlur}
+              onKeyDown={handleTextKeyDown}
+              style={{
+                position: 'absolute',
+                left: `${layer.x - 2}px`,
+                top: `${layer.y - 9}px`,
+                fontFamily: layer.fontFamily,
+                fontSize: `${layer.fontSize}px`,
+                color: colorToString(layer.color),
+                // border: '2px solid #3399FF',
+                outline: 'none',
+                background: 'transparent',
+                padding: '2px',
+                minWidth: '100px',
+              }}
+            />
+          );
+        })()}
     </main>
   );
 };
