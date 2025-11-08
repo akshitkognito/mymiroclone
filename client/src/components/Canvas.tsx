@@ -343,7 +343,8 @@ const Canvas = () => {
 
   const selectedTextLayer =
     selectedLayerId && layers.get(selectedLayerId)?.type === LayerType.Text
-      ? (layers.get(selectedLayerId) as any)
+      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (layers.get(selectedLayerId) as any)
       : null;
 
   return (
