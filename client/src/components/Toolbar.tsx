@@ -46,7 +46,7 @@ interface RightToolbarProps {
 
 const colors = [
   { name: 'Red', rgb: { r: 255, g: 0, b: 0 } },
-  { name: 'Blue', rgb: { r: 59, g: 130, b: 246 } },
+  { name: 'Yellow', rgb: { r: 234, g: 179, b: 8 } },
   { name: 'Green', rgb: { r: 34, g: 197, b: 94 } },
   { name: 'Purple', rgb: { r: 168, g: 85, b: 247 } },
   { name: 'Orange', rgb: { r: 249, g: 115, b: 22 } },

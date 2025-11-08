@@ -1,6 +1,6 @@
 export interface Shape {
   id: string;
-  type: 'rectangle' | 'square' | 'line' | 'arrow' | 'text';
+  type: 'rectangle' | 'square' | 'line' | 'arrow' | 'text' | 'pencil';
   x: number;
   y: number;
   width?: number;

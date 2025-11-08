@@ -18,8 +18,13 @@ import useLayerManagement from '@/hooks/useLayerManagement';
 import useLayerHitDetection from '@/hooks/useLayerHitDetection';
 import useLayerRenderer from '@/hooks/useLayerRenderer';
 import { colorToString } from '@/utils/elementFactory';
+import Portfoliobar from './Portfoliobar';
 
-const Canvas = () => {
+interface CanvasProps {
+  pageId?: string;
+}
+
+const Canvas = ({ pageId = 'default' }: CanvasProps) => {
   const [canvasState, setCanvasState] = useState<CanvasState>({
     mode: CanvasMode.None,
   });
@@ -42,12 +47,26 @@ const Canvas = () => {
 
   const dimensions = useCanvasDimensions();
 
-  const { layers, layerIds, insertLayer, updateLayer, deleteLayer } =
-    useLayerManagement(lastUsedColor);
+  const {
+    layers,
+    layerIds,
+    insertLayer,
+    updateLayer,
+    deleteLayer,
+    finishDrawing,
+    isLoading,
+  } = useLayerManagement(lastUsedColor, pageId);
 
   const findLayerAtPoint = useLayerHitDetection(layers, layerIds);
 
-  useLayerRenderer(canvasRef, layers, layerIds, dimensions, selectedLayerId);
+  useLayerRenderer(
+    canvasRef,
+    layers,
+    layerIds,
+    dimensions,
+    selectedLayerId,
+    editingTextId
+  );
 
   const handleDelete = useCallback(() => {
     if (selectedLayerId) {
@@ -248,6 +267,8 @@ const Canvas = () => {
 
         if (shouldDelete) {
           deleteLayer(layerId);
+        } else {
+          finishDrawing(layerId);
         }
       }
 
@@ -255,13 +276,15 @@ const Canvas = () => {
     }
 
     if (draggingRef.current) {
+      const { layerId } = draggingRef.current;
+      finishDrawing(layerId);
       draggingRef.current = null;
     }
 
     if (canvasState.mode === CanvasMode.Translating) {
       setCanvasState({ mode: CanvasMode.None });
     }
-  }, [canvasState, layers, deleteLayer]);
+  }, [canvasState, layers, deleteLayer, finishDrawing]);
 
   const handleTextDoubleClick = useCallback(() => {
     if (selectedLayerId) {
@@ -275,7 +298,7 @@ const Canvas = () => {
   const handleTextChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (editingTextId) {
-        updateLayer(editingTextId, { content: e.target.value });
+        updateLayer(editingTextId, { content: e.target.value }, true);
       }
     },
     [editingTextId, updateLayer]
@@ -308,7 +331,7 @@ const Canvas = () => {
       if (selectedLayerId) {
         const layer = layers.get(selectedLayerId);
         if (layer && layer.type === LayerType.Text) {
-          updateLayer(selectedLayerId, { fontFamily: newFontFamily });
+          updateLayer(selectedLayerId, { fontFamily: newFontFamily }, true);
         }
       }
     },
@@ -321,7 +344,8 @@ const Canvas = () => {
       if (selectedLayerId) {
         const layer = layers.get(selectedLayerId);
         if (layer && layer.type === LayerType.Text) {
-          updateLayer(selectedLayerId, { fontSize: newFontSize });
+          updateLayer(selectedLayerId, { fontSize: newFontSize }, true);
+          // setTimeout(() => finishDrawing(selectedLayerId), 0);
         }
       }
     },
@@ -333,8 +357,9 @@ const Canvas = () => {
       setLastUsedColor(newColor);
       if (selectedLayerId) {
         const layer = layers.get(selectedLayerId);
-        if (layer && layer.type === LayerType.Text) {
-          updateLayer(selectedLayerId, { color: newColor });
+        if (layer) {
+          updateLayer(selectedLayerId, { color: newColor }, true);
+          // setTimeout(() => finishDrawing(selectedLayerId), 0);
         }
       }
     },
@@ -346,6 +371,17 @@ const Canvas = () => {
       ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (layers.get(selectedLayerId) as any)
       : null;
+
+  if (isLoading) {
+    return (
+      <main className='h-screen w-screen flex items-center justify-center bg-gray-50'>
+        <div className='text-center'>
+          <div className='inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900'></div>
+          <p className='mt-4 text-gray-600'>Loading canvas...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className='h-screen w-screen relative overflow-hidden bg-gray-50'>
@@ -400,6 +436,7 @@ const Canvas = () => {
             />
           );
         })()}
+      <Portfoliobar />
     </main>
   );
 };

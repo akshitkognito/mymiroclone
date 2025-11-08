@@ -2,7 +2,11 @@ export const isValidShape = (shape: any): boolean => {
   if (!shape || typeof shape !== 'object') return false;
   if (!shape.id || typeof shape.id !== 'string') return false;
   if (!shape.pageId || typeof shape.pageId !== 'string') return false;
-  if (!['rectangle', 'square', 'line', 'arrow', 'text'].includes(shape.type))
+  if (
+    !['rectangle', 'square', 'line', 'arrow', 'text', 'pencil'].includes(
+      shape.type
+    )
+  )
     return false;
   if (typeof shape.x !== 'number' || typeof shape.y !== 'number') return false;
 

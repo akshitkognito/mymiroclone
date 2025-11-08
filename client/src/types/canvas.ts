@@ -156,3 +156,31 @@ export type Layer =
   | ArrowLayer
   | PencilLayer
   | TextLayer;
+
+export interface ApiResponse<T = ShapeDto> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+  details?: string;
+}
+
+export interface ShapeDto {
+  id: string;
+  type: 'rectangle' | 'circle' | 'line' | 'arrow' | 'text' | 'pencil';
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  color?: string;
+  fontSize?: number;
+  fontFamily?: string;
+  content?: string;
+  pageId: string;
+  points?: Point[];
+}
+
+export interface ShapesResponseDto {
+  shapes: ShapeDto[];
+  count: number;
+}

@@ -68,16 +68,6 @@ export const createShape = (req: Request, res: Response) => {
   try {
     const shape = req.body;
 
-    if (!isValidShape(shape)) {
-      const response: ApiResponse = {
-        success: false,
-        error: 'Invalid shape data',
-        details:
-          'Shape must include id, pageId, type, x, y, and type-specific fields',
-      };
-      return res.status(400).json(response);
-    }
-
     if (shapes.has(shape.id)) {
       const response: ApiResponse = {
         success: false,
