@@ -65,9 +65,12 @@ export const layerToShapeDto = (
         fontFamily: layer.fontFamily,
       };
     case LayerType.Pencil:
+      const firstPoint = layer.points[0] || { x: 0, y: 0 };
       return {
         ...baseShape,
         type: 'pencil',
+        x: firstPoint.x,
+        y: firstPoint.y,
         points: layer.points,
       };
     default:
@@ -105,8 +108,8 @@ export const shapeDtoToLayer = (shape: ShapeDto): Layer | null => {
       return {
         id: shape.id,
         type: LayerType.Circle,
-        x: shape.x!,
-        y: shape.y!,
+        x: shape.x || 0,
+        y: shape.y || 0,
         width: shape.width || 0,
         height: shape.height || 0,
         color,
