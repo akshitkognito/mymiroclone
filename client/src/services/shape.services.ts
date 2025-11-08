@@ -6,8 +6,7 @@ import {
 } from '@/types/canvas';
 import { layerToShapeDto, shapeDtoToLayer } from '@/utils/elementFactory';
 
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+export const API_BASE_URL = 'http://139.59.77.53';
 export const CONFIGURED_API_URL = `${API_BASE_URL}/api/v1/shapes`;
 
 export const shapeService = {
