@@ -17,7 +17,7 @@ const useLayerManagement = (
       {
         type: 'create' | 'update' | 'delete';
         layer?: Layer;
-        timeout?: NodeJS.Timeout;
+        timeout?: ReturnType<typeof setTimeout>;
       }
     >
   >(new Map());
@@ -62,7 +62,7 @@ const useLayerManagement = (
     (
       layerId: string,
       layer: Layer,
-      operationType: 'create' | 'update',
+      _operationType: 'create' | 'update',
       delay: number = 500
     ) => {
       const existing = pendingOperations.current.get(layerId);
