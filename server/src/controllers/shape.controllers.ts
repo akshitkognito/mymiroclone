@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { ApiResponse, Shape, ShapesResponse } from '../types/shape';
-import { isValidShape } from '../utils/utils';
 
 const shapes = new Map<string, Shape | null>();
 let shapeIds: string[] = [];
@@ -119,6 +118,9 @@ export const updateShapeById = (req: Request, res: Response) => {
         ...updates,
         id: existingShape.id,
         pageId: existingShape.pageId,
+        points: updates.points ?? existingShape.points,
+        width: updates.width ?? existingShape.width,
+        height: updates.height ?? existingShape.height,
       };
 
     // if (updatedShape && !isValidShape(updatedShape)) {

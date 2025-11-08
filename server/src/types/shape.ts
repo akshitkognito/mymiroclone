@@ -1,6 +1,6 @@
 export interface Shape {
   id: string;
-  type: 'rectangle' | 'square' | 'line' | 'arrow' | 'text' | 'pencil';
+  type: 'rectangle' | 'circle' | 'line' | 'arrow' | 'text' | 'pencil';
   x: number;
   y: number;
   width?: number;
@@ -10,7 +10,13 @@ export interface Shape {
   fontFamily?: string;
   content?: string;
   pageId: string;
+  points?: Point[];
 }
+
+export type Point = {
+  x: number;
+  y: number;
+};
 
 export interface ApiResponse<T = any> {
   success: boolean;
